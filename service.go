@@ -1,4 +1,4 @@
-// Package service uses the registry service
+// Package service uses the register service
 package service
 
 import (
@@ -6,26 +6,26 @@ import (
 	"fmt"
 	"time"
 
-	pb "github.com/unistack-org/micro-registry-service/v3/proto"
+	pb "github.com/unistack-org/micro-register-service/v3/proto"
 	"github.com/unistack-org/micro/v3/client"
 	"github.com/unistack-org/micro/v3/errors"
-	"github.com/unistack-org/micro/v3/registry"
+	"github.com/unistack-org/micro/v3/register"
 )
 
-type serviceRegistry struct {
-	opts registry.Options
-	// name of the registry
+type serviceRegister struct {
+	opts register.Options
+	// name of the register
 	service string
 	// address
 	address []string
-	// client to call registry
-	client pb.RegistryService
+	// client to call register
+	client pb.RegisterService
 }
 
-func (s *serviceRegistry) callOpts() []client.CallOption {
+func (s *serviceRegister) callOpts() []client.CallOption {
 	var opts []client.CallOption
 
-	// set registry address
+	// set register address
 	if len(s.address) > 0 {
 		opts = append(opts, client.WithAddress(s.address...))
 	}
@@ -38,7 +38,7 @@ func (s *serviceRegistry) callOpts() []client.CallOption {
 	return opts
 }
 
-func (s *serviceRegistry) Init(opts ...registry.Option) error {
+func (s *serviceRegister) Init(opts ...register.Option) error {
 	for _, o := range opts {
 		o(&s.opts)
 	}
@@ -65,25 +65,25 @@ func (s *serviceRegistry) Init(opts ...registry.Option) error {
 		return fmt.Errorf("missing Service option")
 	}
 
-	s.client = pb.NewRegistryService(s.service, cli)
+	s.client = pb.NewRegisterService(s.service, cli)
 
 	return nil
 }
 
-func (s *serviceRegistry) Options() registry.Options {
+func (s *serviceRegister) Options() register.Options {
 	return s.opts
 }
 
-func (s *serviceRegistry) Connect(ctx context.Context) error {
+func (s *serviceRegister) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (s *serviceRegistry) Disconnect(ctx context.Context) error {
+func (s *serviceRegister) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (s *serviceRegistry) Register(ctx context.Context, srv *registry.Service, opts ...registry.RegisterOption) error {
-	options := registry.NewRegisterOptions(opts...)
+func (s *serviceRegister) Register(ctx context.Context, srv *register.Service, opts ...register.RegisterOption) error {
+	options := register.NewRegisterOptions(opts...)
 
 	// encode srv into protobuf and pack TTL and domain into it
 	pbSrv := ToProto(srv)
@@ -95,8 +95,8 @@ func (s *serviceRegistry) Register(ctx context.Context, srv *registry.Service, o
 	return err
 }
 
-func (s *serviceRegistry) Deregister(ctx context.Context, srv *registry.Service, opts ...registry.DeregisterOption) error {
-	options := registry.NewDeregisterOptions(opts...)
+func (s *serviceRegister) Deregister(ctx context.Context, srv *register.Service, opts ...register.DeregisterOption) error {
+	options := register.NewDeregisterOptions(opts...)
 
 	// encode srv into protobuf and pack domain into it
 	pbSrv := ToProto(srv)
@@ -107,28 +107,28 @@ func (s *serviceRegistry) Deregister(ctx context.Context, srv *registry.Service,
 	return err
 }
 
-func (s *serviceRegistry) GetService(ctx context.Context, name string, opts ...registry.GetOption) ([]*registry.Service, error) {
-	options := registry.NewGetOptions(opts...)
+func (s *serviceRegister) LookupService(ctx context.Context, name string, opts ...register.LookupOption) ([]*register.Service, error) {
+	options := register.NewLookupOptions(opts...)
 
-	rsp, err := s.client.GetService(ctx, &pb.GetRequest{
+	rsp, err := s.client.LookupService(ctx, &pb.LookupRequest{
 		Service: name, Options: &pb.Options{Domain: options.Domain},
 	}, s.callOpts()...)
 
 	if verr, ok := err.(*errors.Error); ok && verr.Code == 404 {
-		return nil, registry.ErrNotFound
+		return nil, register.ErrNotFound
 	} else if err != nil {
 		return nil, err
 	}
 
-	services := make([]*registry.Service, 0, len(rsp.Services))
+	services := make([]*register.Service, 0, len(rsp.Services))
 	for _, service := range rsp.Services {
 		services = append(services, ToService(service))
 	}
 	return services, nil
 }
 
-func (s *serviceRegistry) ListServices(ctx context.Context, opts ...registry.ListOption) ([]*registry.Service, error) {
-	options := registry.NewListOptions(opts...)
+func (s *serviceRegister) ListServices(ctx context.Context, opts ...register.ListOption) ([]*register.Service, error) {
+	options := register.NewListOptions(opts...)
 
 	req := &pb.ListRequest{Options: &pb.Options{Domain: options.Domain}}
 	rsp, err := s.client.ListServices(ctx, req, s.callOpts()...)
@@ -136,7 +136,7 @@ func (s *serviceRegistry) ListServices(ctx context.Context, opts ...registry.Lis
 		return nil, err
 	}
 
-	services := make([]*registry.Service, 0, len(rsp.Services))
+	services := make([]*register.Service, 0, len(rsp.Services))
 	for _, service := range rsp.Services {
 		services = append(services, ToService(service))
 	}
@@ -144,8 +144,8 @@ func (s *serviceRegistry) ListServices(ctx context.Context, opts ...registry.Lis
 	return services, nil
 }
 
-func (s *serviceRegistry) Watch(ctx context.Context, opts ...registry.WatchOption) (registry.Watcher, error) {
-	options := registry.NewWatchOptions(opts...)
+func (s *serviceRegister) Watch(ctx context.Context, opts ...register.WatchOption) (register.Watcher, error) {
+	options := register.NewWatchOptions(opts...)
 
 	stream, err := s.client.Watch(ctx, &pb.WatchRequest{
 		Service: options.Service, Options: &pb.Options{Domain: options.Domain},
@@ -158,20 +158,24 @@ func (s *serviceRegistry) Watch(ctx context.Context, opts ...registry.WatchOptio
 	return newWatcher(stream), nil
 }
 
-func (s *serviceRegistry) String() string {
+func (s *serviceRegister) String() string {
 	return "service"
 }
 
-// NewRegistry returns a new registry service client
-func NewRegistry(opts ...registry.Option) registry.Registry {
-	options := registry.NewOptions(opts...)
+func (s *serviceRegister) Name() string {
+	return s.opts.Name
+}
+
+// NewRegister returns a new register service client
+func NewRegister(opts ...register.Option) register.Register {
+	options := register.NewOptions(opts...)
 
 	addrs := options.Addrs
 	if len(addrs) == 0 {
 		addrs = []string{"127.0.0.1:8000"}
 	}
 
-	return &serviceRegistry{
+	return &serviceRegister{
 		opts:    options,
 		address: addrs,
 	}

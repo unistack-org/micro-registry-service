@@ -3,8 +3,8 @@ syntax = "proto3";
 package service;
 option go_package="github.com/unistack-org/micro-registry-service;service";
 
-service Registry {
-	rpc GetService(GetRequest) returns (GetResponse) {};
+service Register {
+	rpc LookupService(LookupRequest) returns (LookupResponse) {};
 	rpc Register(Service) returns (EmptyResponse) {};
 	rpc Deregister(Service) returns (EmptyResponse) {};
 	rpc ListServices(ListRequest) returns (ListResponse) {};
@@ -59,12 +59,12 @@ message Result {
 
 message EmptyResponse {}
 
-message GetRequest {
+message LookupRequest {
 	string service = 1;
 	Options options = 2;
 }
 
-message GetResponse {
+message LookupResponse {
 	repeated Service services = 1;
 }
 

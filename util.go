@@ -1,11 +1,11 @@
 package service
 
 import (
-	pb "github.com/unistack-org/micro-registry-service/v3/proto"
-	"github.com/unistack-org/micro/v3/registry"
+	pb "github.com/unistack-org/micro-register-service/v3/proto"
+	"github.com/unistack-org/micro/v3/register"
 )
 
-func values(v []*registry.Value) []*pb.Value {
+func values(v []*register.Value) []*pb.Value {
 	if len(v) == 0 {
 		return []*pb.Value{}
 	}
@@ -21,14 +21,14 @@ func values(v []*registry.Value) []*pb.Value {
 	return vs
 }
 
-func toValues(v []*pb.Value) []*registry.Value {
+func toValues(v []*pb.Value) []*register.Value {
 	if len(v) == 0 {
-		return []*registry.Value{}
+		return []*register.Value{}
 	}
 
-	vs := make([]*registry.Value, 0, len(v))
+	vs := make([]*register.Value, 0, len(v))
 	for _, vi := range v {
-		vs = append(vs, &registry.Value{
+		vs = append(vs, &register.Value{
 			Name:   vi.Name,
 			Type:   vi.Type,
 			Values: toValues(vi.Values),
@@ -37,7 +37,7 @@ func toValues(v []*pb.Value) []*registry.Value {
 	return vs
 }
 
-func ToProto(s *registry.Service) *pb.Service {
+func ToProto(s *register.Service) *pb.Service {
 	endpoints := make([]*pb.Endpoint, 0, len(s.Endpoints))
 	for _, ep := range s.Endpoints {
 		var request, response *pb.Value
@@ -86,13 +86,13 @@ func ToProto(s *registry.Service) *pb.Service {
 	}
 }
 
-func ToService(s *pb.Service) *registry.Service {
-	endpoints := make([]*registry.Endpoint, 0, len(s.Endpoints))
+func ToService(s *pb.Service) *register.Service {
+	endpoints := make([]*register.Endpoint, 0, len(s.Endpoints))
 	for _, ep := range s.Endpoints {
-		var request, response *registry.Value
+		var request, response *register.Value
 
 		if ep.Request != nil {
-			request = &registry.Value{
+			request = &register.Value{
 				Name:   ep.Request.Name,
 				Type:   ep.Request.Type,
 				Values: toValues(ep.Request.Values),
@@ -100,14 +100,14 @@ func ToService(s *pb.Service) *registry.Service {
 		}
 
 		if ep.Response != nil {
-			response = &registry.Value{
+			response = &register.Value{
 				Name:   ep.Response.Name,
 				Type:   ep.Response.Type,
 				Values: toValues(ep.Response.Values),
 			}
 		}
 
-		endpoints = append(endpoints, &registry.Endpoint{
+		endpoints = append(endpoints, &register.Endpoint{
 			Name:     ep.Name,
 			Request:  request,
 			Response: response,
@@ -115,16 +115,16 @@ func ToService(s *pb.Service) *registry.Service {
 		})
 	}
 
-	nodes := make([]*registry.Node, 0, len(s.Nodes))
+	nodes := make([]*register.Node, 0, len(s.Nodes))
 	for _, node := range s.Nodes {
-		nodes = append(nodes, &registry.Node{
+		nodes = append(nodes, &register.Node{
 			Id:       node.Id,
 			Address:  node.Address,
 			Metadata: node.Metadata,
 		})
 	}
 
-	return &registry.Service{
+	return &register.Service{
 		Name:      s.Name,
 		Version:   s.Version,
 		Metadata:  s.Metadata,

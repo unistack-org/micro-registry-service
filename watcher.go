@@ -1,20 +1,20 @@
 package service
 
 import (
-	pb "github.com/unistack-org/micro-registry-service/v3/proto"
-	"github.com/unistack-org/micro/v3/registry"
+	pb "github.com/unistack-org/micro-register-service/v3/proto"
+	"github.com/unistack-org/micro/v3/register"
 )
 
 type serviceWatcher struct {
-	stream pb.Registry_WatchService
+	stream pb.Register_WatchService
 	closed chan bool
 }
 
-func (s *serviceWatcher) Next() (*registry.Result, error) {
+func (s *serviceWatcher) Next() (*register.Result, error) {
 	// check if closed
 	select {
 	case <-s.closed:
-		return nil, registry.ErrWatcherStopped
+		return nil, register.ErrWatcherStopped
 	default:
 	}
 
@@ -23,7 +23,7 @@ func (s *serviceWatcher) Next() (*registry.Result, error) {
 		return nil, err
 	}
 
-	return &registry.Result{
+	return &register.Result{
 		Action:  r.Action,
 		Service: ToService(r.Service),
 	}, nil
@@ -39,7 +39,7 @@ func (s *serviceWatcher) Stop() {
 	}
 }
 
-func newWatcher(stream pb.Registry_WatchService) registry.Watcher {
+func newWatcher(stream pb.Register_WatchService) register.Watcher {
 	return &serviceWatcher{
 		stream: stream,
 		closed: make(chan bool),
