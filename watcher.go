@@ -1,12 +1,12 @@
 package service
 
 import (
-	pb "github.com/unistack-org/micro-register-service/v3/proto"
+	pbmicro "github.com/unistack-org/micro-register-service/v3/micro"
 	"github.com/unistack-org/micro/v3/register"
 )
 
 type serviceWatcher struct {
-	stream pb.Register_WatchService
+	stream pbmicro.Register_WatchClient
 	closed chan bool
 }
 
@@ -39,7 +39,7 @@ func (s *serviceWatcher) Stop() {
 	}
 }
 
-func newWatcher(stream pb.Register_WatchService) register.Watcher {
+func newWatcher(stream pbmicro.Register_WatchClient) register.Watcher {
 	return &serviceWatcher{
 		stream: stream,
 		closed: make(chan bool),

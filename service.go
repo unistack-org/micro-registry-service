@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	pbmicro "github.com/unistack-org/micro-register-service/v3/micro"
 	pb "github.com/unistack-org/micro-register-service/v3/proto"
 	"github.com/unistack-org/micro/v3/client"
 	"github.com/unistack-org/micro/v3/errors"
@@ -19,7 +20,7 @@ type serviceRegister struct {
 	// address
 	address []string
 	// client to call register
-	client pb.RegisterService
+	client pbmicro.RegisterClient
 }
 
 func (s *serviceRegister) callOpts() []client.CallOption {
@@ -65,7 +66,7 @@ func (s *serviceRegister) Init(opts ...register.Option) error {
 		return fmt.Errorf("missing Service option")
 	}
 
-	s.client = pb.NewRegisterService(s.service, cli)
+	s.client = pbmicro.NewRegisterClient(s.service, cli)
 
 	return nil
 }

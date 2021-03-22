@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package service;
-option go_package="github.com/unistack-org/micro-registry-service;service";
+option go_package="github.com/unistack-org/micro-register-service/v3/proto;service";
 
 service Register {
 	rpc LookupService(LookupRequest) returns (LookupResponse) {};

@@ -11,7 +11,8 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+// Requires gRPC-Go v1.32.0 or later.
+const _ = grpc.SupportPackageIsVersion7
 
 // RegisterClient is the client API for Register service.
 //
@@ -69,7 +70,7 @@ func (c *registerClient) ListServices(ctx context.Context, in *ListRequest, opts
 }
 
 func (c *registerClient) Watch(ctx context.Context, in *WatchRequest, opts ...grpc.CallOption) (Register_WatchClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Register_serviceDesc.Streams[0], "/service.Register/Watch", opts...)
+	stream, err := c.cc.NewStream(ctx, &Register_ServiceDesc.Streams[0], "/service.Register/Watch", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,25 +117,32 @@ type RegisterServer interface {
 type UnimplementedRegisterServer struct {
 }
 
-func (*UnimplementedRegisterServer) LookupService(context.Context, *LookupRequest) (*LookupResponse, error) {
+func (UnimplementedRegisterServer) LookupService(context.Context, *LookupRequest) (*LookupResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LookupService not implemented")
 }
-func (*UnimplementedRegisterServer) Register(context.Context, *Service) (*EmptyResponse, error) {
+func (UnimplementedRegisterServer) Register(context.Context, *Service) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (*UnimplementedRegisterServer) Deregister(context.Context, *Service) (*EmptyResponse, error) {
+func (UnimplementedRegisterServer) Deregister(context.Context, *Service) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Deregister not implemented")
 }
-func (*UnimplementedRegisterServer) ListServices(context.Context, *ListRequest) (*ListResponse, error) {
+func (UnimplementedRegisterServer) ListServices(context.Context, *ListRequest) (*ListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListServices not implemented")
 }
-func (*UnimplementedRegisterServer) Watch(*WatchRequest, Register_WatchServer) error {
+func (UnimplementedRegisterServer) Watch(*WatchRequest, Register_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
 }
-func (*UnimplementedRegisterServer) mustEmbedUnimplementedRegisterServer() {}
+func (UnimplementedRegisterServer) mustEmbedUnimplementedRegisterServer() {}
 
-func RegisterRegisterServer(s *grpc.Server, srv RegisterServer) {
-	s.RegisterService(&_Register_serviceDesc, srv)
+// UnsafeRegisterServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RegisterServer will
+// result in compilation errors.
+type UnsafeRegisterServer interface {
+	mustEmbedUnimplementedRegisterServer()
+}
+
+func RegisterRegisterServer(s grpc.ServiceRegistrar, srv RegisterServer) {
+	s.RegisterService(&Register_ServiceDesc, srv)
 }
 
 func _Register_LookupService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -230,7 +238,10 @@ func (x *registerWatchServer) Send(m *Result) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-var _Register_serviceDesc = grpc.ServiceDesc{
+// Register_ServiceDesc is the grpc.ServiceDesc for Register service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Register_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "service.Register",
 	HandlerType: (*RegisterServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -258,5 +269,5 @@ var _Register_serviceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "register.proto",
+	Metadata: "service.proto",
 }
