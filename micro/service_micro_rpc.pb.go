@@ -158,8 +158,9 @@ func RegisterRegisterServer(s server.Server, sh RegisterServer, opts ...server.H
 		register
 	}
 	h := &registerServer{sh}
+	var nopts []server.HandlerOption
 	for _, endpoint := range NewRegisterEndpoints() {
-		opts = append(opts, api.WithEndpoint(endpoint))
+		nopts = append(nopts, api.WithEndpoint(endpoint))
 	}
-	return s.Handle(s.NewHandler(&Register{h}, opts...))
+	return s.Handle(s.NewHandler(&Register{h}, append(nopts, opts...)...))
 }

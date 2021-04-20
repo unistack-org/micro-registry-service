@@ -32,16 +32,9 @@ message Node {
 // Endpoint is a endpoint provided by a service
 message Endpoint {
 	string name = 1;
-	Value request = 2;
-	Value response = 3;
+	string request = 2;
+	string response = 3;
 	map<string, string> metadata = 4;
-}
-
-// Value is an opaque value for a request or response
-message Value {
-	string name = 1;
-	string type = 2;
-	repeated Value values = 3;
 }
 
 // Options are registry options
